@@ -13,15 +13,17 @@ let stageCounter = 0;
 let direction = ''
 let img = new Image();
 img.src = './images/sprite.png'; // Loads player
-
+let contamination = 0;
 
 const faceUp = 520;
 const faceLeft = 580;
 const faceDown = 650;
 const faceRight = 710;
-
+lives = 3;
 let currentLoopIndex = 0;
 let frameCount = 0;
+
+let virusCount = 0;
 
 let player = {
   //This is your player object
@@ -129,6 +131,8 @@ var object = {
 
 let obstacle = []
 
+let virus = []
+
 var win = {
   x: 660,
   y: Math.floor(Math.random()*400 + 50),
@@ -150,7 +154,7 @@ function createObstacles() {
   for(i=0; i<3; i++)
   {
     let obs = {
-      x: 50 + Math.floor(Math.random()*150) + 200*i,
+      x: 50 + Math.floor(Math.random()*125) + 200*i,
       y: Math.floor(Math.random()*50 + 250*(i%2)),
       w: 30,
       h: 200
@@ -159,14 +163,36 @@ function createObstacles() {
   }
 }
 
+function createVirus() {
+  for(i=0; i<3; i++)
+  {
+    let obs = {
+      x: 50 + Math.floor(Math.random()*125) + 200*i,
+      y: Math.floor(Math.random()*50 + 250*(i%2)),
+      w: 50,
+      h: 50
+    }
+    virus.push(obs)
+  }
+}
+
 function deleteObstacle(index)
 {
   obstacle.splice(index,1)
 }
 
-function borders(obj) {
+function deleteVirus(index) {
+  virus.splice(index,1)
+}
+
+function drawObstacles(obj) {
   ctx.fillStyle = 'red';
   ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+}
+
+function drawVirusObs(obj) {
+  ctx.fillStyle = 'blue';
+  ctx.fillRect(obj.x, obj.y, obj.w, obj.h)
 }
 
 function winningShade() {
@@ -182,6 +208,11 @@ function lightsOff() {
 function drawCanvas() {
   ctx.fillStyle = 'green';
   ctx.fillRect(0, 0, 700, 500);
+}
+
+function drawVirus(i) {
+  ctx.fillStyle = 'rgba(255,0,0,.25)'
+  ctx.fillRect(0,0,-25+i,500)
 }
 
 /*function drawCar() {
@@ -296,6 +327,40 @@ function detectCollision(obs) {
   // });
 }
 
+function detectVirusObsCollision (obs) {
+  var a = { x: obs.x, y: obs.y, width: obs.w, height: obs.h }; //Our obstacles
+  var b = { x: player.x, y: player.y, width: player.w, height: player.h }; //Our player
+  if (
+    a.x < b.x + b.width &&
+    a.x + a.width > b.x &&
+    a.y < b.y + b.height &&
+    a.y + a.height > b.y
+  ) {
+    // collision detected!
+    lives--
+    virus.splice(obs,1)
+  }
+}
+
+function detectVirusCollision() {
+  var a = { x: 0, y: 0, width: -25+virusCount, height: 500 }; //Our virus
+  var b = { x: player.x, y: player.y, width: player.w, height: player.h }; //Our player
+  if (
+    a.x < b.x + b.width &&
+    a.x + a.width > b.x &&
+    a.y < b.y + b.height &&
+    a.y + a.height > b.y
+  ) {
+    // collision detected!
+    contamination++
+    if(contamination === 200)
+    {
+      lives--
+      contamination = 0
+    }
+}
+}
+
 function detectWin() {
   var a = { x: 699, y: win.y+25, width: 1, height: 1 }; //Our obstacles
   var b = { x: player.x, y: player.y, width: player.w, height: player.h }; //Our car
@@ -312,13 +377,31 @@ function detectWin() {
   }
 }
 
+function drawLives() {
+  ctx.fillStyle = 'white'
+  ctx.font = '20px serif'
+  ctx.fillText(lives.toString(),player.x+17,player.y)
+}
+
+function drawContamination() {
+  ctx.fillStyle = 'orange'
+  ctx.font = '20px serif'
+  ctx.fillText((Math.floor(contamination/2)).toString()+'%',player.x+16, player.y-15)
+}
+
 function startGame() {
   ctx.clearRect(0, 0, 700, 500);
 
   drawCanvas();
+  drawVirus(virusCount);
   for(i=0;i<obstacle.length;i++)
   {
-    borders(obstacle[i]);
+    drawObstacles(obstacle[i]);
+  }
+  
+  for(j=0;j<virus.length;j++)
+  {
+    drawVirusObs(virus[j])
   }
   winningShade();
   step();
@@ -329,12 +412,17 @@ function startGame() {
   if (lightSwitch) {
     lightsOff();
     lightTime = 500;
-    
+    virusCount+= .5;
     detectWin();
     detectMove(canMove);
+    detectVirusCollision();
     for(i=0;i<obstacle.length;i++)
     {
       detectCollision(obstacle[i])
+    }
+    for(j=0;j<virus.length;j++)
+    {
+      detectVirusObsCollision(virus[j])
     }
     direction = ''
   } else {
@@ -347,15 +435,21 @@ function startGame() {
   // drawCar();
   
   drawPlayer();
-  
+  drawLives();
+  drawContamination();
   if(newLevel)
   {
+    virusCount = 0
     lightSwitch = false
     lightCounter = 0
     //clear obstacle array
     for(i=0;i<obstacle.length;i++)
     {
       deleteObstacle(i)
+    }
+    for(j=0;j<virus.length;j++)
+    {
+      deleteVirus(j)
     }
     canMove = false
     if(player.x > 0)
@@ -366,6 +460,7 @@ function startGame() {
     {
       //create new obstacle array
       createObstacles();
+      createVirus();
       canMove = true
       newLevel = false
       win.y = Math.floor(Math.random()*400 + 50)
@@ -376,13 +471,21 @@ function startGame() {
     }
   }
   
-  
+  if(lives <= 0)
+  {
+    ctx.fillStyle = 'black'
+    ctx.fillRect(0,0,700,500)
+    ctx.fillStyle = "white"
+    ctx.font = '50px serif'
+    ctx.fillText('Game Over',250,245)
+  }
   
   animateId = window.requestAnimationFrame(startGame); //Game rendering -infinite loop that goes super fast
 }
 
 window.onload = () => {
   createObstacles();
+  createVirus();
   startGame();
 };
 
