@@ -10,6 +10,114 @@ let lightTime = 100;
 let canMove = true;
 let stageCounter = 0;
 let direction = ''
+let img = new Image();
+img.src = './images/sprite.png'; // Loads player
+
+
+const faceUp = 520;
+const faceLeft = 580;
+const faceDown = 650;
+const faceRight = 710;
+
+let currentLoopIndex = 0;
+let frameCount = 0;
+
+let player = {
+  //This is your player object
+  sx: 10,
+  sy: 710,
+  sw: 40,
+  sh: 60,
+  x: 0,
+  y: 0,
+  w: 40,
+  h: 60,
+  image: img,
+};
+
+const movement = [
+  10,
+  75,
+  10,
+  140,
+  75,
+  205,
+  140,
+  265,
+  205,
+  330,
+  265,
+  395,
+  460,
+  525,
+];
+
+function faceDirection(frameX, frameY, canvasX, canvasY) {
+  ctx.drawImage(
+    img,
+    frameX,
+    frameY,
+    player.sw,
+    player.sh,
+    canvasX,
+    canvasY,
+    player.sw,
+    player.sh
+  );
+  player.sx = frameX;
+  player.sy = frameY;
+  player.x = canvasX;
+  player.y = canvasY;
+}
+
+function drawPlayer(){
+  ctx.drawImage(
+    img,
+    player.sx,
+    player.sy,
+    player.sw,
+    player.sh,
+    player.x,
+    player.y,
+    player.w,
+    player.h
+  );
+}
+
+function step(dir) {
+  frameCount++;
+  if (frameCount < 5) {
+   //window.requestAnimationFrame(step);
+    return;
+  }
+  frameCount = 0;
+  
+
+  //drawPlayer()
+
+  switch (dir) {
+    case 'up':
+      faceDirection(movement[currentLoopIndex], faceUp, player.x, player.y);
+      break;
+    case 'down':
+      faceDirection(movement[currentLoopIndex], faceDown, player.x, player.y);
+      break;
+    case 'left':
+      faceDirection(movement[currentLoopIndex], faceLeft, player.x, player.y);
+      break;
+    case 'right':
+      faceDirection(movement[currentLoopIndex], faceRight, player.x, player.y);
+      break;
+
+    default:
+      break;
+  }
+  currentLoopIndex++;
+  if (currentLoopIndex >= movement.length) {
+    currentLoopIndex = 0;
+  }
+  //window.requestAnimationFrame(step);
+}
 
 var object = {
   x: Math.floor(Math.random()*550 + 50),
@@ -21,27 +129,27 @@ var object = {
 let obstacle = []
 
 var win = {
-  x: 650,
+  x: 660,
   y: Math.floor(Math.random()*400 + 50),
-  w: 50,
-  h: 50,
+  w: 40,
+  h: 60,
   type: 'win'
 }
 
-var car = {
+/*var car = {
   //This is your car object
   x: 0,
   y: 0,
   w: 50,
   h: 50,
   image: carImg,
-};
+};*/
 
 function createObstacles() {
   for(i=0; i<3; i++)
   {
     let obs = {
-      x: 200 + 100*i,
+      x: 50 + Math.floor(Math.random()*150) + 200*i,
       y: Math.floor(Math.random()*50 + 250*(i%2)),
       w: 30,
       h: 200
@@ -75,45 +183,45 @@ function drawCanvas() {
   ctx.fillRect(0, 0, 700, 500);
 }
 
-function drawCar() {
+/*function drawCar() {
   ctx.drawImage(car.image, car.x, car.y, car.w, car.h);
-}
+}*/
 
 function detectMove(move) {
   if(move)
   {
     switch(direction) {
       case 'left':
-        if (car.x <= 0) {
+        if (player.x <= 0) {
           console.log('Border');
         } else {
-          car.x -= 5;
+          player.x -= 5;
         }
         break;
       case 'right':
-        if (car.x === 650) {
+        if (player.x === 660) {
           console.log('Border');
         } else {
-          car.x += 5;
+          player.x += 5;
         }
         break;
       case 'up':
-        if (car.y <= 0) {
+        if (player.y <= 0) {
           console.log('Border');
         } else {
-            car.y -= 5;
+            player.y -= 5;
         }
         break;
       case 'down':
-        if (car.y === 450) {
+        if (player.y === 440) {
           console.log('Border');
         } else {
-          car.y += 5;
+          player.y += 5;
         }
         break;
       
     }
-
+    step(direction)
   }
 }
 
@@ -143,7 +251,7 @@ document.body.onkeydown = function (e) {
 function detectCollision(obs) {
   // obs.map((obj) => {
   var a = { x: obs.x, y: obs.y, width: obs.w, height: obs.h }; //Our obstacles
-  var b = { x: car.x, y: car.y, width: car.w, height: car.h }; //Our car
+  var b = { x: player.x, y: player.y, width: player.w, height: player.h }; //Our player
   if (
     a.x < b.x + b.width &&
     a.x + a.width > b.x &&
@@ -155,31 +263,31 @@ function detectCollision(obs) {
     switch(direction)
     {
       case 'left':
-        if (car.x <= 0) {
+        if (player.x <= 0) {
           console.log('Border');
         } else {
-          car.x += 5;
+          player.x += 5;
         }
         break;
       case 'right':
-        if (car.x === 650) {
+        if (player.x === 650) {
           console.log('Border');
         } else {
-          car.x -= 5;
+          player.x -= 5;
         }
         break;
       case 'up':
-        if (car.y <= 0) {
+        if (player.y <= 0) {
           console.log('Border');
         } else {
-            car.y += 5;
+            player.y += 5;
         }
         break;
       case 'down':
-        if (car.y === 450) {
+        if (player.y === 450) {
           console.log('Border');
         } else {
-          car.y -= 5;
+          player.y -= 5;
         }
         break;
     }  
@@ -189,7 +297,7 @@ function detectCollision(obs) {
 
 function detectWin() {
   var a = { x: 699, y: win.y+25, width: 1, height: 1 }; //Our obstacles
-  var b = { x: car.x, y: car.y, width: car.w, height: car.h }; //Our car
+  var b = { x: player.x, y: player.y, width: player.w, height: player.h }; //Our car
   if (
     a.x < b.x + b.width &&
     a.x + a.width > b.x &&
@@ -212,6 +320,7 @@ function startGame() {
     borders(obstacle[i]);
   }
   winningShade();
+  step();
   if (lightCounter % lightTime === lightTime-1) {
     lightSwitch = !lightSwitch;
   }
@@ -234,7 +343,9 @@ function startGame() {
 
   lightCounter++;
 
-  drawCar();
+  // drawCar();
+  
+  drawPlayer();
   
   if(newLevel)
   {
@@ -246,9 +357,9 @@ function startGame() {
       deleteObstacle(i)
     }
     canMove = false
-    if(car.x > 0)
+    if(player.x > 0)
     {
-      car.x -= 10
+      player.x -= 10
     }
     else
     {
