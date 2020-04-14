@@ -66,7 +66,27 @@ let canvas = document.querySelector('canvas');
 let ctx = canvas.getContext('2d');
 let animateId = null;
 let carImg = new Image();
-carImg.src = './images/car.png'; //Loads the car
+carImg.src = '/images/colombia-flag-country.png'
+let logImg = new Image();
+
+//  NEW IMAGES
+logImg.src = '/images/log.png'
+let colCanvas = new Image();
+colCanvas.src = '/images/mat to colombia.jpg'
+let montCanvas = new Image();
+montCanvas.src = '/images/map to montenegro.jpg'
+let grceCanvas = new Image();
+grceCanvas.src = '/images/map to greece.jpg'
+let treeImg = new Image();
+treeImg.src = '/images/tree.png'
+let rockImg = new Image();
+rockImg.src = '/images/rocks.png'
+let mountainImg = new Image();
+mountainImg.src = '/images/mountain.png'
+let metalFloorCanvas = new Image();
+metalFloorCanvas.src = '/images/metalfloor.png'
+let column = new Image();
+column.src = '/images/greek-column.png'
 
 let lightCounter = 0;
 let lightSwitch = false;
@@ -100,12 +120,39 @@ function lightsOff() {
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, 700, 500);
 }
-
-function drawCanvas() {
-  ctx.fillStyle = 'green';
-  ctx.fillRect(0, 0, 700, 500);
+let canvasSize = {
+  x:0,
+  y:0,
+  w:700,
+  h:500,
 }
 
+function drawColCanvas() {
+  ctx.drawImage(colCanvas, canvasSize.x, canvasSize.y, canvasSize.w, canvasSize.h)
+}
+
+function drawMontCanvas() {
+  ctx.drawImage(montCanvas, canvasSize.x, canvasSize.y, canvasSize.w, canvasSize.h)
+}
+
+function drawGrceCanvas() {
+  ctx.drawImage(grceCanvas, canvasSize.x, canvasSize.y, canvasSize.w, canvasSize.h)
+}
+function drawMetalFloor() {
+  ctx.drawImage(metalFloorCanvas, canvasSize.x, canvasSize.y, canvasSize.w, canvasSize.h)
+}
+
+function drawTree() {
+  ctx.drawImage(treeImg, 320, 200, 70, 90)
+}
+
+function drawMountain(){
+  ctx.drawImage(mountainImg, 320, 300, 70, 90)
+}
+
+function drawRocks() {
+  ctx.drawImage(rockImg, 320, 30, 70, 90)
+}
 function drawCar() {
   ctx.drawImage(car.image, car.x, car.y, car.w, car.h);
 }
@@ -155,7 +202,7 @@ function detectMove() {
 let obstacle = [
   {
     x: 100,
-    y: Math.floor(Math.random()* 50),
+    y: Math.floor(Math.random()* 300),
     w: 30,
     h: 200
   },
@@ -167,17 +214,22 @@ let obstacle = [
   },
   {
     x: 450,
-    y: Math.floor(Math.random()* 50),
+    y: Math.floor(Math.random()* 300),
     w: 30,
     h: 200
   }
 
 ]
 
-function drawObstacle() {
+function drawLog() {
   for(i = 0; i < obstacle.length; i++){
-  ctx.fillStyle = 'red';
-  ctx.fillRect(obstacle[i].x, obstacle[i].y, obstacle[i].w, obstacle[i].h); 
+  ctx.drawImage(logImg, obstacle[i].x, obstacle[i].y, obstacle[i].w, obstacle[i].h); 
+  }
+}
+
+function drawColumn() {
+  for(i = 0; i < obstacle.length; i++){
+  ctx.drawImage(column, obstacle[i].x, obstacle[i].y, 60, obstacle[i].h); 
   }
 }
 
@@ -217,10 +269,12 @@ if(
 function startGame() {
   ctx.clearRect(0, 0, 700, 500);
 
-  drawCanvas();
+  drawColCanvas();
 
-  drawObstacle();
-
+  drawLog();
+  drawTree();
+  drawMountain()
+  drawRocks();
   // if (lightCounter % lightTime === 0) {
   //   lightSwitch = !lightSwitch;
   // }
