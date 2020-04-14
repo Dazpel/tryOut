@@ -1,3 +1,38 @@
+let introMusic = document.getElementById('start');
+let playingMusic = document.getElementById('playing');
+let stepMusic = document.getElementById('step');
+let successMusic = document.getElementById('success');
+
+let gameTracker = {
+  name: 'Corona(The Beer)',
+  country: 'Colombia',
+  level: 1,
+  hp: 100,
+  lysols: 3,
+  cFlag: '../images/colombia-flag-country.png',
+};
+
+introMusic.play();
+const begin = () => {
+  introMusic.pause();
+  playingMusic.play();
+
+  let trackDiv = document.getElementById('gameTracker');
+  let initVal = `<div id="gInfo"><h1>${gameTracker.country}: Level ${gameTracker.level}/5</h1>
+  <h3>${gameTracker.name} HP: ${gameTracker.hp} - Lysols Left: ${gameTracker.lysols}</h3></div></div>
+  <div id="gFlag"><img src="${gameTracker.cFlag}" alt=""></div> 
+</div>`;
+  trackDiv.innerHTML = initVal;
+
+  document.getElementById('mainPage').style.display = 'none';
+
+  document.getElementById('game-board').style.display = 'grid';
+
+  document.getElementById(
+    'body'
+  ).style.backgroundImage = `url('../images/bogota.jpg')`;
+ 
+};
 
 let canvas = document.querySelector('canvas');
 let ctx = canvas.getContext('2d');
@@ -10,10 +45,9 @@ let lightSwitch = false;
 let lightTime = 100;
 let canMove = true;
 let stageCounter = 0;
-let direction = ''
+let direction = '';
 let img = new Image();
 img.src = './images/sprite.png'; // Loads player
-
 
 const faceUp = 520;
 const faceLeft = 580;
@@ -71,7 +105,7 @@ function faceDirection(frameX, frameY, canvasX, canvasY) {
   player.y = canvasY;
 }
 
-function drawPlayer(){
+function drawPlayer() {
   ctx.drawImage(
     img,
     player.sx,
@@ -88,11 +122,10 @@ function drawPlayer(){
 function step(dir) {
   frameCount++;
   if (frameCount < 5) {
-   //window.requestAnimationFrame(step);
+    //window.requestAnimationFrame(step);
     return;
   }
   frameCount = 0;
-  
 
   //drawPlayer()
 
@@ -121,21 +154,21 @@ function step(dir) {
 }
 
 var object = {
-  x: Math.floor(Math.random()*550 + 50),
-  y: Math.floor(Math.random()*200 + 50),
+  x: Math.floor(Math.random() * 550 + 50),
+  y: Math.floor(Math.random() * 200 + 50),
   w: 30,
-  h: 100
-}
+  h: 100,
+};
 
-let obstacle = []
+let obstacle = [];
 
 var win = {
   x: 660,
-  y: Math.floor(Math.random()*400 + 50),
+  y: Math.floor(Math.random() * 400 + 50),
   w: 40,
   h: 60,
-  type: 'win'
-}
+  type: 'win',
+};
 
 /*var car = {
   //This is your car object
@@ -147,21 +180,19 @@ var win = {
 };*/
 
 function createObstacles() {
-  for(i=0; i<3; i++)
-  {
+  for (i = 0; i < 3; i++) {
     let obs = {
-      x: 50 + Math.floor(Math.random()*150) + 200*i,
-      y: Math.floor(Math.random()*50 + 250*(i%2)),
+      x: 50 + Math.floor(Math.random() * 150) + 200 * i,
+      y: Math.floor(Math.random() * 50 + 250 * (i % 2)),
       w: 30,
-      h: 200
-    }
-    obstacle.push(obs)
+      h: 200,
+    };
+    obstacle.push(obs);
   }
 }
 
-function deleteObstacle(index)
-{
-  obstacle.splice(index,1)
+function deleteObstacle(index) {
+  obstacle.splice(index, 1);
 }
 
 function borders(obj) {
@@ -189,10 +220,11 @@ function drawCanvas() {
 }*/
 
 function detectMove(move) {
-  if(move)
-  {
-    switch(direction) {
+  
+  if (move) {
+    switch (direction) {
       case 'left':
+        stepMusic.play()
         if (player.x <= 0) {
           console.log('Border');
         } else {
@@ -200,6 +232,7 @@ function detectMove(move) {
         }
         break;
       case 'right':
+        stepMusic.play()
         if (player.x === 660) {
           console.log('Border');
         } else {
@@ -207,47 +240,50 @@ function detectMove(move) {
         }
         break;
       case 'up':
+        stepMusic.play()
         if (player.y <= 0) {
           console.log('Border');
         } else {
-            player.y -= 5;
+          player.y -= 5;
         }
         break;
       case 'down':
+        stepMusic.play()
         if (player.y === 440) {
           console.log('Border');
         } else {
           player.y += 5;
         }
         break;
-      
     }
-    step(direction)
+    step(direction);
+    
   }
 }
 
 document.body.onkeydown = function (e) {
+  
   switch (e.keyCode) {
     case 38:
-      direction = 'up'
+      direction = 'up';
       break;
     case 40:
-      direction = 'down'
+      direction = 'down';
       break;
     case 37:
       // left
-      direction = 'left'
+      direction = 'left';
       break;
 
     case 39:
       //right
-      direction = 'right'
+      direction = 'right';
       break;
     default:
       break;
   }
+  
 };
-
 
 function detectCollision(obs) {
   // obs.map((obj) => {
@@ -260,9 +296,8 @@ function detectCollision(obs) {
     a.y + a.height > b.y
   ) {
     // collision detected!
-  
-    switch(direction)
-    {
+
+    switch (direction) {
       case 'left':
         if (player.x <= 0) {
           console.log('Border');
@@ -281,7 +316,7 @@ function detectCollision(obs) {
         if (player.y <= 0) {
           console.log('Border');
         } else {
-            player.y += 5;
+          player.y += 5;
         }
         break;
       case 'down':
@@ -291,13 +326,13 @@ function detectCollision(obs) {
           player.y -= 5;
         }
         break;
-    }  
+    }
   }
   // });
 }
 
 function detectWin() {
-  var a = { x: 699, y: win.y+25, width: 1, height: 1 }; //Our obstacles
+  var a = { x: 699, y: win.y + 25, width: 1, height: 1 }; //Our obstacles
   var b = { x: player.x, y: player.y, width: player.w, height: player.h }; //Our car
   if (
     a.x < b.x + b.width &&
@@ -306,78 +341,74 @@ function detectWin() {
     a.y + a.height > b.y
   ) {
     // collision detected!
-      newLevel = true;
-      win.w = 0;
-      win.h = 0;
+    playingMusic.pause()
+    successMusic.play()
+    newLevel = true;
+    win.w = 0;
+    win.h = 0;
+   setInterval(() => {
+    playingMusic.play()
+   }, 1700);
   }
 }
 
 function startGame() {
   ctx.clearRect(0, 0, 700, 500);
-
+  
+  stepMusic.pause()
   drawCanvas();
-  for(i=0;i<obstacle.length;i++)
-  {
+  for (i = 0; i < obstacle.length; i++) {
     borders(obstacle[i]);
   }
   winningShade();
   step();
-  if (lightCounter % lightTime === lightTime-1) {
+  if (lightCounter % lightTime === lightTime - 1) {
     lightSwitch = !lightSwitch;
   }
 
   if (lightSwitch) {
     lightsOff();
     lightTime = 500;
-    
+
     detectWin();
     detectMove(canMove);
-    for(i=0;i<obstacle.length;i++)
-    {
-      detectCollision(obstacle[i])
+    for (i = 0; i < obstacle.length; i++) {
+      detectCollision(obstacle[i]);
     }
-    direction = ''
+    direction = '';
   } else {
-
     lightTime = 100;
   }
 
   lightCounter++;
 
   // drawCar();
-  
+
   drawPlayer();
-  
-  if(newLevel)
-  {
-    lightSwitch = false
-    lightCounter = 0
+
+  if (newLevel) {
+    lightSwitch = false;
+    lightCounter = 0;
     //clear obstacle array
-    for(i=0;i<obstacle.length;i++)
-    {
-      deleteObstacle(i)
+    for (i = 0; i < obstacle.length; i++) {
+      deleteObstacle(i);
     }
-    canMove = false
-    if(player.x > 0)
-    {
-      player.x -= 10
-    }
-    else
-    {
+    canMove = false;
+    if (player.x > 0) {
+      player.x -= 10;
+    } else {
       //create new obstacle array
       createObstacles();
-      canMove = true
-      newLevel = false
-      win.y = Math.floor(Math.random()*400 + 50)
-      win.h = 50
-      win.w = 50
-      
+      canMove = true;
+      newLevel = false;
+      win.y = Math.floor(Math.random() * 400 + 50);
+      win.h = 50;
+      win.w = 50;
+
       lightCounter = 0;
     }
   }
-  
-  
-  
+
   animateId = window.requestAnimationFrame(startGame); //Game rendering -infinite loop that goes super fast
 }
 
@@ -385,5 +416,3 @@ window.onload = () => {
   createObstacles();
   startGame();
 };
-
-
