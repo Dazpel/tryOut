@@ -384,9 +384,10 @@ function drawLives() {
 }
 
 function drawContamination() {
-  ctx.fillStyle = 'orange'
-  ctx.font = '20px serif'
-  ctx.fillText((Math.floor(contamination/2)).toString()+'%',player.x+16, player.y-15)
+  ctx.fillStyle = 'red'
+  ctx.fillRect(player.x,player.y-10,40,10)
+  ctx.fillStyle = 'green'
+  ctx.fillRect(player.x,player.y-10,(40- 40*(contamination/200)),10)
 }
 
 function startGame() {
