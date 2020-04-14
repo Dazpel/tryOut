@@ -1,76 +1,32 @@
-// let player = new Image();
-// player.src = 'https://opengameart.org/sites/default/files/Green-Cap-Character-16x18.png';
-
-// img.onload = function() {
-//   init();
-// };
-
-// function init() {
-//   window.requestAnimationFrame(step);
-//   drawFrame(0, 0, 0, 0);
-//   drawFrame(1, 0, scaledWidth, 0);
-//   drawFrame(0, 0, scaledWidth * 2, 0);
-//   drawFrame(2, 0, scaledWidth * 3, 0);
-// }
-
-// function drawFrame(frameX, frameY, canvasX, canvasY) {
-//   ctx.fillStyle = 'green'
-//     ctx.fillRect(0,0, 700, 500)
-
-//     ctx.drawImage(img,
-//                   frameX * width, frameY * height, width, height,
-//                   canvasX, canvasY, scaledWidth, scaledHeight);
-//   }
-
-// const scale = 2;
-// const width = 16;
-// const height = 18;
-// const scaledWidth = scale * width;
-// const scaledHeight = scale * height;
-
-// const cycleLoop = [0, 1, 0, 2];
-// let currentLoopIndex = 0;
-// let frameCount = 0;
-// let currentDirection = 0;
-
-// function step() {
-//   frameCount++;
-//   if (frameCount < 15) {
-//     window.requestAnimationFrame(step);
-//     return;
-//   }
-//   frameCount = 0;
-//   ctx.clearRect(0, 0, canvas.width, canvas.height);
-//   drawFrame(cycleLoop[currentLoopIndex], 0, 0, 0);
-//   currentLoopIndex++;
-
-//   if (currentLoopIndex >= cycleLoop.length) {
-//     currentLoopIndex = 0;
-//     currentDirection++; // Next row/direction in the sprite sheet
-//   }
-//   // Reset to the "down" direction once we've run through them all
-//   if (currentDirection >= 4) {
-//     currentDirection = 0;
-//   }
-//   window.requestAnimationFrame(step);
-// }
-
-// function drawFrame(frameX, frameY, canvasX, canvasY) {
-
-//     ctx.drawImage(img,
-//                   frameX * width, frameY * height, width, height,
-//                   canvasX, canvasY, scaledWidth, scaledHeight);
-//   }
-
 let canvas = document.querySelector('canvas');
 let ctx = canvas.getContext('2d');
 let animateId = null;
 let carImg = new Image();
 carImg.src = './images/car.png'; //Loads the car
-
+let newLevel = false;
 let lightCounter = 0;
 let lightSwitch = false;
 let lightTime = 100;
+let canMove = true;
+let stageCounter = 0;
+let direction = ''
+
+var object = {
+  x: Math.floor(Math.random()*550 + 50),
+  y: Math.floor(Math.random()*200 + 50),
+  w: 30,
+  h: 100
+}
+
+let obstacle = []
+
+var win = {
+  x: 650,
+  y: Math.floor(Math.random()*400 + 50),
+  w: 50,
+  h: 50,
+  type: 'win'
+}
 
 var car = {
   //This is your car object
@@ -81,14 +37,32 @@ var car = {
   image: carImg,
 };
 
-function borders() {
+function createObstacles() {
+  for(i=0; i<3; i++)
+  {
+    let obs = {
+      x: 200 + 100*i,
+      y: Math.floor(Math.random()*50 + 250*(i%2)),
+      w: 30,
+      h: 200
+    }
+    obstacle.push(obs)
+  }
+}
+
+function deleteObstacle(index)
+{
+  obstacle.splice(index,1)
+}
+
+function borders(obj) {
   ctx.fillStyle = 'red';
-  ctx.fillRect(300, 0, 30, 100);
+  ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
 }
 
 function winningShade() {
   ctx.fillStyle = 'blue';
-  ctx.fillRect(650, 220, 50, 60);
+  ctx.fillRect(win.x, win.y, win.w, win.h);
 }
 
 function lightsOff() {
@@ -105,50 +79,70 @@ function drawCar() {
   ctx.drawImage(car.image, car.x, car.y, car.w, car.h);
 }
 
-function detectMove() {
-  document.body.onkeydown = function (e) {
-    // console.log(e)
-    switch (e.keyCode) {
-      case 38:
-        if (car.y <= 0) {
-          console.log('Border');
-        } else {
-          car.y -= 5;
-        }
-        break;
-      case 40:
-        if (car.y === 450) {
-          console.log('Border');
-        } else {
-          car.y += 5;
-        }
-        break;
-      case 37:
-        // left
+function detectMove(move) {
+  if(move)
+  {
+    switch(direction) {
+      case 'left':
         if (car.x <= 0) {
           console.log('Border');
         } else {
           car.x -= 5;
         }
         break;
-
-      case 39:
-        //right
+      case 'right':
         if (car.x === 650) {
           console.log('Border');
         } else {
           car.x += 5;
         }
         break;
-      default:
+      case 'up':
+        if (car.y <= 0) {
+          console.log('Border');
+        } else {
+            car.y -= 5;
+        }
         break;
+      case 'down':
+        if (car.y === 450) {
+          console.log('Border');
+        } else {
+          car.y += 5;
+        }
+        break;
+      
     }
-  };
+
+  }
 }
+
+document.body.onkeydown = function (e) {
+  switch (e.keyCode) {
+    case 38:
+      direction = 'up'
+      break;
+    case 40:
+      direction = 'down'
+      break;
+    case 37:
+      // left
+      direction = 'left'
+      break;
+
+    case 39:
+      //right
+      direction = 'right'
+      break;
+    default:
+      break;
+  }
+};
+
 
 function detectCollision(obs) {
   // obs.map((obj) => {
-  var a = { x: 699, y: 220, width: 50, height: 60 }; //Our obstacles
+  var a = { x: obs.x, y: obs.y, width: obs.w, height: obs.h }; //Our obstacles
   var b = { x: car.x, y: car.y, width: car.w, height: car.h }; //Our car
   if (
     a.x < b.x + b.width &&
@@ -157,38 +151,126 @@ function detectCollision(obs) {
     a.y + a.height > b.y
   ) {
     // collision detected!
-    console.log('Collision detected');
-    // tracker(`Collided with ${obj.name}`);
+  
+    switch(direction)
+    {
+      case 'left':
+        if (car.x <= 0) {
+          console.log('Border');
+        } else {
+          car.x += 5;
+        }
+        break;
+      case 'right':
+        if (car.x === 650) {
+          console.log('Border');
+        } else {
+          car.x -= 5;
+        }
+        break;
+      case 'up':
+        if (car.y <= 0) {
+          console.log('Border');
+        } else {
+            car.y += 5;
+        }
+        break;
+      case 'down':
+        if (car.y === 450) {
+          console.log('Border');
+        } else {
+          car.y -= 5;
+        }
+        break;
+    }  
   }
   // });
+}
+
+function detectWin() {
+  var a = { x: 699, y: win.y+25, width: 1, height: 1 }; //Our obstacles
+  var b = { x: car.x, y: car.y, width: car.w, height: car.h }; //Our car
+  if (
+    a.x < b.x + b.width &&
+    a.x + a.width > b.x &&
+    a.y < b.y + b.height &&
+    a.y + a.height > b.y
+  ) {
+    // collision detected!
+      newLevel = true;
+      win.w = 0;
+      win.h = 0;
+  }
 }
 
 function startGame() {
   ctx.clearRect(0, 0, 700, 500);
 
   drawCanvas();
-
-  borders();
+  for(i=0;i<obstacle.length;i++)
+  {
+    borders(obstacle[i]);
+  }
   winningShade();
-  if (lightCounter % lightTime === 0) {
+  if (lightCounter % lightTime === lightTime-1) {
     lightSwitch = !lightSwitch;
   }
 
-  // if (lightSwitch) {
-  //   lightsOff();
-  //   lightTime = 500;
-  // } else {
-  //   lightTime = 100;
-  // }
+  if (lightSwitch) {
+    lightsOff();
+    lightTime = 500;
+    
+    detectWin();
+    detectMove(canMove);
+    for(i=0;i<obstacle.length;i++)
+    {
+      detectCollision(obstacle[i])
+    }
+    direction = ''
+  } else {
 
-  // lightCounter++;
+    lightTime = 100;
+  }
+
+  lightCounter++;
 
   drawCar();
-  detectCollision();
-  detectMove();
+  
+  if(newLevel)
+  {
+    lightSwitch = false
+    lightCounter = 0
+    //clear obstacle array
+    for(i=0;i<obstacle.length;i++)
+    {
+      deleteObstacle(i)
+    }
+    canMove = false
+    if(car.x > 0)
+    {
+      car.x -= 10
+    }
+    else
+    {
+      //create new obstacle array
+      createObstacles();
+      canMove = true
+      newLevel = false
+      win.y = Math.floor(Math.random()*400 + 50)
+      win.h = 50
+      win.w = 50
+      
+      lightCounter = 0;
+    }
+  }
+  
+  
+  
   animateId = window.requestAnimationFrame(startGame); //Game rendering -infinite loop that goes super fast
 }
 
 window.onload = () => {
+  createObstacles();
   startGame();
 };
+
