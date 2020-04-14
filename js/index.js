@@ -1,76 +1,40 @@
-// let player = new Image();
-// player.src = 'https://opengameart.org/sites/default/files/Green-Cap-Character-16x18.png';
 
-// img.onload = function() {
-//   init();
-// };
-
-// function init() {
-//   window.requestAnimationFrame(step);
-//   drawFrame(0, 0, 0, 0);
-//   drawFrame(1, 0, scaledWidth, 0);
-//   drawFrame(0, 0, scaledWidth * 2, 0);
-//   drawFrame(2, 0, scaledWidth * 3, 0);
-// }
-
-// function drawFrame(frameX, frameY, canvasX, canvasY) {
-//   ctx.fillStyle = 'green'
-//     ctx.fillRect(0,0, 700, 500)
-
-//     ctx.drawImage(img,
-//                   frameX * width, frameY * height, width, height,
-//                   canvasX, canvasY, scaledWidth, scaledHeight);
-//   }
-
-// const scale = 2;
-// const width = 16;
-// const height = 18;
-// const scaledWidth = scale * width;
-// const scaledHeight = scale * height;
-
-// const cycleLoop = [0, 1, 0, 2];
-// let currentLoopIndex = 0;
-// let frameCount = 0;
-// let currentDirection = 0;
-
-// function step() {
-//   frameCount++;
-//   if (frameCount < 15) {
-//     window.requestAnimationFrame(step);
-//     return;
-//   }
-//   frameCount = 0;
-//   ctx.clearRect(0, 0, canvas.width, canvas.height);
-//   drawFrame(cycleLoop[currentLoopIndex], 0, 0, 0);
-//   currentLoopIndex++;
-
-//   if (currentLoopIndex >= cycleLoop.length) {
-//     currentLoopIndex = 0;
-//     currentDirection++; // Next row/direction in the sprite sheet
-//   }
-//   // Reset to the "down" direction once we've run through them all
-//   if (currentDirection >= 4) {
-//     currentDirection = 0;
-//   }
-//   window.requestAnimationFrame(step);
-// }
-
-// function drawFrame(frameX, frameY, canvasX, canvasY) {
-
-//     ctx.drawImage(img,
-//                   frameX * width, frameY * height, width, height,
-//                   canvasX, canvasY, scaledWidth, scaledHeight);
-//   }
 
 let canvas = document.querySelector('canvas');
 let ctx = canvas.getContext('2d');
 let animateId = null;
+let img = new Image();
+img.src = '../images/sprite.png'; // Loads player
 let carImg = new Image();
 carImg.src = './images/car.png'; //Loads the car
 
 let lightCounter = 0;
 let lightSwitch = false;
 let lightTime = 100;
+
+//Sprite Facing Y coordinates
+const faceUp = 520;
+const faceLeft = 580;
+const faceDown = 650;
+const faceRight = 710;
+
+// Initial values for Step Function
+let currentLoopIndex = 0;
+let frameCount = 0;
+
+//Functionality
+let player = {
+  //This is your player object
+  sx: 10,
+  sy: 710,
+  sw: 40,
+  sh: 60,
+  x: 0,
+  y: 190,
+  w: 40,
+  h: 60,
+  image: img,
+};
 
 var car = {
   //This is your car object
@@ -91,6 +55,42 @@ let safeBox = {
   w: 50,
   h: 60
 }
+
+const movement = [
+  10,
+  75,
+  10,
+  140,
+  75,
+  205,
+  140,
+  265,
+  205,
+  330,
+  265,
+  395,
+  460,
+  525,
+];
+
+function faceDirection(frameX, frameY, canvasX, canvasY) {
+  ctx.drawImage(
+    img,
+    frameX,
+    frameY,
+    player.sw,
+    player.sh,
+    canvasX,
+    canvasY,
+    player.sw,
+    player.sh
+  );
+  player.sx = frameX;
+  player.sy = frameY;
+  player.x = canvasX;
+  player.y = canvasY;
+}
+
 function winningShade() {
   ctx.fillStyle = 'blue';
   ctx.fillRect(safeBox.x, safeBox.y, safeBox.w, safeBox.h);
@@ -110,39 +110,60 @@ function drawCar() {
   ctx.drawImage(car.image, car.x, car.y, car.w, car.h);
 }
 
+
+
+function drawPlayer(){
+  ctx.drawImage(
+    img,
+    player.sx,
+    player.sy,
+    player.sw,
+    player.sh,
+    player.x,
+    player.y,
+    player.w,
+    player.h
+  );
+}
+
 function detectMove() {
   document.body.onkeydown = function (e) {
     // console.log(e)
+    var speed = 2;
     switch (e.keyCode) {
       case 38:
-        if (car.y <= 0) {
+        if (player.y <= 0) {
           console.log('Border');
         } else {
-          car.y -= 10;
+          step('up');
+          player.y -= speed;
         }
         break;
       case 40:
-        if (car.y === 450) {
+        if (player.y === 450) {
           console.log('Border');
         } else {
-          car.y += 10;
+          step('down');
+          player.y += speed;
         }
         break;
       case 37:
         // left
-        if (car.x <= 0) {
+        if (player.x <= 0) {
           console.log('Border');
         } else {
-          car.x -= 10;
+          step('left');
+          player.x -= speed;
         }
         break;
 
       case 39:
         //right
-        if (car.x === 650) {
+        if (player.x === 650) {
           console.log('Border');
         } else {
-          car.x += 10;
+          step('right');
+          player.x += speed;
         }
         break;
       default:
@@ -150,7 +171,6 @@ function detectMove() {
     }
   };
  }
-
 
 let obstacle = [
   {
@@ -214,11 +234,51 @@ if(
   console.log('Safe!')
 }
 }
+
+//Detect movement and change sprites accordingly
+function step(dir) {
+  frameCount++;
+  if (frameCount < 5) {
+    window.requestAnimationFrame(step);
+    return;
+  }
+  frameCount = 0;
+  
+
+  drawPlayer()
+
+  switch (dir) {
+    case 'up':
+      faceDirection(movement[currentLoopIndex], faceUp, player.x, player.y);
+      break;
+    case 'down':
+      faceDirection(movement[currentLoopIndex], faceDown, player.x, player.y);
+      break;
+    case 'left':
+      faceDirection(movement[currentLoopIndex], faceLeft, player.x, player.y);
+      break;
+    case 'right':
+      faceDirection(movement[currentLoopIndex], faceRight, player.x, player.y);
+      break;
+
+    default:
+      break;
+  }
+
+  //
+  //
+  //
+  currentLoopIndex++;
+  if (currentLoopIndex >= movement.length) {
+    currentLoopIndex = 0;
+  }
+  window.requestAnimationFrame(step);
+}
+
 function startGame() {
   ctx.clearRect(0, 0, 700, 500);
 
   drawCanvas();
-
   drawObstacle();
 
   // if (lightCounter % lightTime === 0) {
@@ -235,7 +295,8 @@ function startGame() {
   // lightCounter++;
 
   winningShade();
-  drawCar();
+  // drawCar();
+  step()
   detectObstacle();
   detectWin()
   detectMove();
