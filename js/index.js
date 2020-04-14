@@ -1,3 +1,4 @@
+
 let canvas = document.querySelector('canvas');
 let ctx = canvas.getContext('2d');
 let animateId = null;
@@ -273,4 +274,5 @@ window.onload = () => {
   createObstacles();
   startGame();
 };
+
 
